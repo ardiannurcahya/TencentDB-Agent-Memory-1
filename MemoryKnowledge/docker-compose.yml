@@ -16,10 +16,22 @@ services:
     build: .
     image: ${TEAM_KNOWLEDGE_IMAGE:-team-knowledge:latest}
     ports:
-      - "${TEAM_KNOWLEDGE_HOST_PORT:-8421}:8421"
+      - "127.0.0.1:${TEAM_KNOWLEDGE_HOST_PORT:-8421}:8421"
     volumes:
       - knowledge-data:/app/data
+    tmpfs:
+      - /tmp:size=100M
+    read_only: true
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
     restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: 1G
+          cpus: '2.0'
     command:
       - --public-url=${PUBLIC_URL:?set PUBLIC_URL e.g. http://203.0.113.10:8421/v3}
       - --tmc-callback=${TMC_CALLBACK:-}

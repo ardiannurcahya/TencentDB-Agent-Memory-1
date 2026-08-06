@@ -72,6 +72,12 @@ COPY start-combined.sh /usr/local/bin/start-combined.sh
 COPY README.md /app/README.md
 RUN chmod +x /usr/local/bin/start-combined.sh && mkdir -p /data/knowledge /app/panel/config
 
+# Security: non-root user (CIS Docker Benchmark 4.1)
+RUN groupadd -r app && useradd -r -g app -u 10001 -m app \
+    && chown -R app:app /app /data
+
+USER app
+
 EXPOSE 8125 8424
 
 HEALTHCHECK --interval=20s --timeout=8s --retries=15 --start-period=45s \

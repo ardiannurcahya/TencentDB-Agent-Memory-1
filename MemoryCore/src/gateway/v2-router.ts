@@ -1505,8 +1505,8 @@ function scopedProfileStorage(storage: StorageAdapter, isolation?: RequestIsolat
   return createScopedStorageAdapter(storage, buildIsolationStoragePrefix(isolation));
 }
 
-function md5Hex(text: string): string {
-  return createHash("md5").update(text).digest("hex");
+function sha256Hex(text: string): string {
+  return createHash("sha256").update(text).digest("hex");
 }
 
 function parseMetadataJson(raw: string | undefined): MemoryRecord["metadata"] {
@@ -1643,7 +1643,7 @@ async function syncProfileToVdb(
       logger.warn(`${TAG} [profile-sync] probe failed for ${filename}: ${err instanceof Error ? err.message : String(err)}`);
     }
 
-    const contentMd5 = md5Hex(content);
+    const contentMd5 = sha256Hex(content);
     const nextVersion = currentMd5 === contentMd5
       ? (baselineVersion ?? 0)
       : (baselineVersion === undefined ? 0 : baselineVersion + 1);
@@ -2038,7 +2038,7 @@ async function handleCoreWrite(body: unknown, _auth: V2AuthContext, requestId: s
 
   // Normalize before persistence: persona body must NOT contain Scene Navigation
   // (a derived section rebuilt from scene_index.json) or stray surrounding
-  // whitespace. Both COS and VDB get the *exact* same bytes so md5(content) is
+  // whitespace. Both COS and VDB get the *exact* same bytes so sha256(content) is
   // a stable identity across stores. Without this, /v2/core/write callers that
   // post the raw round-tripped body (which includes the navigation footer and
   // a trailing newline appended by refreshPersonaNavigation) would write a

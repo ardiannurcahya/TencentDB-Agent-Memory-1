@@ -71,6 +71,13 @@ ENV NODE_ENV=production \
     HOST=0.0.0.0 \
     PORT=8123
 RUN mkdir -p /app/logs /data
+
+# Security: non-root user (CIS Docker Benchmark 4.1)
+RUN groupadd -r app && useradd -r -g app -u 10001 -m app \
+    && chown -R app:app /app /data
+
+USER app
+
 EXPOSE 8123
 
 HEALTHCHECK --interval=15s --timeout=10s --retries=20 --start-period=60s \

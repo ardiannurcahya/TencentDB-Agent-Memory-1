@@ -49,6 +49,9 @@ RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
       git curl ca-certificates tini \
     && rm -rf /var/lib/apt/lists/*
 
+# Security: non-root user (CIS Docker Benchmark 4.1)
+RUN groupadd -r app && useradd -r -g app -u 10001 -m app
+
 WORKDIR /app
 
 COPY --from=builder /app/node_modules ./node_modules
@@ -59,7 +62,10 @@ COPY --from=builder /app/package.json ./
 COPY docker/entrypoint.sh /usr/local/bin/docker-entrypoint.sh
 COPY docker/smoke-test.sh /usr/local/bin/smoke-test.sh
 RUN chmod +x /usr/local/bin/docker-entrypoint.sh /usr/local/bin/smoke-test.sh \
-    && mkdir -p /app/data
+    && mkdir -p /app/data \
+    && chown -R app:app /app /app/data
+
+USER app
 
 ENV NODE_ENV=production \
     PORT=8421 \
